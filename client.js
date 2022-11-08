@@ -2,7 +2,7 @@ const net = require('net');
 const port= 8080;
 const client = new net.Socket();
 
-client.connect(port, function(){
+client.connect(port, '192.168.0.117', function(){
     console.log(`client connected to server on port ${port}`)
     client.write(`Hello from client`);
 });
