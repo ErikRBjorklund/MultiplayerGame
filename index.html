@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Placeholder</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+    </head>
+    <body style="background-color: black;">
+        <canvas id="canv" style="background-color:white;"></canvas>
+        <!-- <script src="client.js"></script> -->
+        <script src="canvas.js"></script>
+        <script type = "text/javascript">
+            
+            const ws = new WebSocket("ws://192.168.0.117:8080");
+            
+            ws.addEventListener("open", () => {
+                console.log("Connected to server!")
+
+                ws.send("Hello server!");
+
+                sendData();
+                
+            })
+            
+            ws.addEventListener("message", e => {
+                console.log("1");
+                console.log(e.data);
+                const data = e.data.split(" ");
+                console.log(data);
+                update_x(data[0]);
+                update_y(data[1]);
+                console.log("3");
+                ws.send("We out here!");
+            })
+
+            var hold = 0;
+
+            function sendData() {
+                console.log("4");
+                ws.send(`data${hold}`);
+                // hold = hold + 1;
+                // setTimeout(sendData, 50);
+            }
+
+            document.addEventListener('keydown', (e) => {
+                console.log("5");
+                ws.send(`keydown: ${event.key}`.toUpperCase());
+            })
+
+            ws.addEventListener("close", () => {
+                console.log("Disconnected from server!")
+                
+            })
+
+         </script>
+
+         
+        
+    </body>
+</html>
