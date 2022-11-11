@@ -1,40 +1,56 @@
 const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 8080 });
+const user = new Map();
 
-var x = 0;
-var y = 0
+var uid = 1;
 
 wss.on("connection", ws => {
   console.log("New client has connected!");
 
-
+  user.set(uid, [0, 0])
+  
+  ws.send(`PUID ${uid}`);
+  uid++;
   ws.on("message", data => {
-    
+    hold = data.toString().split(" ");
     console.log(`Client has sent us: ${data}`);
 
-    if (data.includes("KEYDOWN:")){
-      handle_input(data);
-      ws.send(`${x} ${y}`);
+    if (!data.includes("CONNECTED")) {
+      console.log(hold[0]);
+      console.log(user.get(parseInt(hold[0])));
+      const tid = parseInt(hold[0]);
+      handle_input(tid, hold[1]);
+      
     }
   })
 
   ws.on("close", () => {
     console.log("Client has disconnected!");
   })
+
+  const interval = setInterval(send_data, 50);
+  function send_data() {
+    for (let [id, pos] of user) {
+      ws.send(`UID ${id} X ${pos[0]} Y ${pos[1]}`);
+    }
+  }
 })
 
 
-function handle_input(input) {
-  if (input.toString() ==="KEYDOWN: W") {
-    y = y - 3;
-  } else if (input.toString() ==="KEYDOWN: A") {
-    x = x - 3;
-  } else if (input.toString() ==="KEYDOWN: S") {
-    y = y + 3;
-  } else if (input.toString() ==="KEYDOWN: D") {
-    x = x + 3;
+
+function handle_input(tid, input) {
+  if (input.toString() ==="W") {
+    user.get(tid)[1] = user.get(tid)[1] - 5;
+  } else if (input.toString() ==="A") {
+    user.get(tid)[0] = user.get(tid)[0] - 5;
+  } else if (input.toString() ==="S") {
+    user.get(tid)[1] = user.get(tid)[1] + 5;
+  } else if (input.toString() ==="D") {
+    user.get(tid)[0] = user.get(tid)[0] + 5;
   }
+
+  
 }
 
 

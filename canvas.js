@@ -7,6 +7,7 @@ canvas.height = 900;
 const background = new Image();
 background.src = './Map2.png';
 
+const playerMap = new Map();
 const player = new Image();
 player.src = './player.png';
 
@@ -30,27 +31,29 @@ class Sprite {
 // })
 
 
-const player_sprite = new Sprite({
-    position: {
-        x: 50,
-        y: 50
-    },
-    image: player
-})
 
 function animate() {
     c.clearRect(0, 0, canvas.width, canvas.height);
     window.requestAnimationFrame(animate);
-    player_sprite.draw();
+    draw_users();
     // background_sprite.draw();
 }
 
-function update_x(x) {
-    player_sprite.position.x = x;
+function update_pos(x, y, tid) {
+    const player_sprite = new Sprite({
+        position: {
+            x: x,
+            y: y
+        },
+        image: player
+    })
+    playerMap.set(tid, player_sprite)
 }
 
-function update_y(y) {
-    player_sprite.position.y = y;
+function draw_users() {
+    for (let x of playerMap) {
+        x[1].draw();
+    }
 }
 
 animate();

@@ -19,39 +19,35 @@
         <script type = "text/javascript">
             
             const ws = new WebSocket("ws://192.168.0.117:8080");
-            
+            var uid;
+
             ws.addEventListener("open", () => {
                 console.log("Connected to server!")
 
-                ws.send("Hello server!");
-
-                sendData();
+                ws.send("CONNECTED");
                 
             })
             
             ws.addEventListener("message", e => {
-                console.log("1");
                 console.log(e.data);
                 const data = e.data.split(" ");
+                var tid = -1;
+                if (data[0] === "PUID") {
+                    uid = data[1];
+                }
+                if (data[0] === "UID") {
+                    tid = data[1];
+                }
+                if (data[2] === "X" && data[4] === "Y" && tid != -1) {
+                    update_pos(data[3], data[5], tid);
+                }
                 console.log(data);
-                update_x(data[0]);
-                update_y(data[1]);
-                console.log("3");
-                ws.send("We out here!");
             })
 
-            var hold = 0;
-
-            function sendData() {
-                console.log("4");
-                ws.send(`data${hold}`);
-                // hold = hold + 1;
-                // setTimeout(sendData, 50);
-            }
 
             document.addEventListener('keydown', (e) => {
                 console.log("5");
-                ws.send(`keydown: ${event.key}`.toUpperCase());
+                ws.send(`${uid} ${event.key}`.toUpperCase());
             })
 
             ws.addEventListener("close", () => {
