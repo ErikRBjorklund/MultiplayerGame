@@ -5,6 +5,8 @@ const wss = new WebSocket.Server({ port: 8080 });
 const user = new Map();
 
 var uid = 1;
+const interval2 = setInterval(do_movement, MS_WAIT);
+const interval1 = setInterval(send_data, MS_WAIT);
 
 wss.on("connection", ws => {
   console.log("New client has connected!");
@@ -26,20 +28,22 @@ wss.on("connection", ws => {
   ws.on("close", () => {
     console.log("Client has disconnected!");
   })
-  const interval2 = setInterval(do_movement, MS_WAIT);
-  const interval1 = setInterval(send_data, MS_WAIT);
-  function send_data() {
-    for (let [id, pos] of user) {
-      ws.send(`UID ${id} X ${pos[0]} Y ${pos[1]}`);
-    }
-  }
+  
+  
 })
 
+function send_data() {
+  wss.clients.forEach(function each(client) {
+    for (let [id, pos] of user) {
+      client.send(`UID ${id} X ${pos[0]} Y ${pos[1]}`);
+    }
+  });
+}
 
 
 function handle_input(input) {
   const tid = parseInt(input[0]);
-  console.log(input);
+  // console.log(input);
   list = user.get(tid)[2];
   if (input[1] === 'D') {
     if (input[2] === 'W') {
@@ -64,14 +68,14 @@ function handle_input(input) {
   }
   
   user.set(tid, [user.get(tid)[0], user.get(tid)[1], list]);
-  console.log(`logging: ${user.get(tid)}`);
+  // console.log(`logging: ${user.get(tid)}`);
 }
 
 function do_movement() {
   for (let [id, pos] of user) {
     var b = false;
     var newx = pos[0];
-    var newy = pos[1]
+    var newy = pos[1];
     if (pos[2][0] === true) {
       newy = newy - 5;
       b = true;
@@ -91,6 +95,10 @@ function do_movement() {
     if (b) {
       user.set(id, [newx, newy, pos[2]])
     }
+    if (id === 1) {
+      console.log(`ID:${id} POS:${pos[0]}`);
+    }
     
   }
+  
 }
