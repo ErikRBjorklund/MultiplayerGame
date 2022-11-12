@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const MS_WAIT = 20;
 
 const wss = new WebSocket.Server({ port: 8080 });
 const user = new Map();
@@ -8,18 +9,15 @@ var uid = 1;
 wss.on("connection", ws => {
   console.log("New client has connected!");
 
-  user.set(uid, [0, 0, "", ""]) //x y U/D(keyup/keydown) K(previous key)
+  user.set(uid, [0, 0, [false, false, false, false]]) //x y  Move_Direction([W, A, S, D])
   
   ws.send(`PUID ${uid}`);
   uid++;
   ws.on("message", data => {
     hold = data.toString().split(" ");
-    console.log(`Client has sent us: ${data}`);
+    // console.log(`Client has sent us: ${data}`);
 
     if (!data.includes("CONNECTED")) {
-      console.log(hold[0]);
-      console.log(user.get(parseInt(hold[0])));
-      
       handle_input(hold);
       
     }
@@ -28,8 +26,8 @@ wss.on("connection", ws => {
   ws.on("close", () => {
     console.log("Client has disconnected!");
   })
-  const interval2 = setInterval(do_movement, 20);
-  const interval1 = setInterval(send_data, 20);
+  const interval2 = setInterval(do_movement, MS_WAIT);
+  const interval1 = setInterval(send_data, MS_WAIT);
   function send_data() {
     for (let [id, pos] of user) {
       ws.send(`UID ${id} X ${pos[0]} Y ${pos[1]}`);
@@ -41,58 +39,58 @@ wss.on("connection", ws => {
 
 function handle_input(input) {
   const tid = parseInt(input[0]);
-  user.set(tid, [user.get(tid)[0], user.get(tid)[1], input[1], input[2]]);
+  console.log(input);
+  list = user.get(tid)[2];
+  if (input[1] === 'D') {
+    if (input[2] === 'W') {
+      list[0] = true;
+    } else if (input[2] === 'A') {
+      list[1] = true;
+    } else if (input[2] === 'S') {
+      list[2] = true;
+    } else if (input[2] === 'D') {
+      list[3] = true;
+    }
+  } else if (input[1] === 'U') {
+    if (input[2] === 'W') {
+      list[0] = false;
+    } else if (input[2] === 'A') {
+      list[1] = false;
+    } else if (input[2] === 'S') {
+      list[2] = false;
+    } else if (input[2] === 'D') {
+      list[3] = false;
+    }
+  }
+  
+  user.set(tid, [user.get(tid)[0], user.get(tid)[1], list]);
+  console.log(`logging: ${user.get(tid)}`);
 }
-
-// function handle_input(tid, input) {
-//   if (input.toString() === "W") {
-//     user.get(tid)[1] = user.get(tid)[1] - 5;
-//   } else if (input.toString() === "A") {
-//     user.get(tid)[0] = user.get(tid)[0] - 5;
-//   } else if (input.toString() === "S") {
-//     user.get(tid)[1] = user.get(tid)[1] + 5;
-//   } else if (input.toString() === "D") {
-//     user.get(tid)[0] = user.get(tid)[0] + 5;
-//   }
-// }
 
 function do_movement() {
   for (let [id, pos] of user) {
-    if (pos[2] === "D") {
-      if (pos[3] == "W") {
-        user.set(id, [pos[0], pos[1] - 5, pos[2], pos[3]])
-      }
-      else if (pos[3] == "A") {
-        user.set(id, [pos[0] - 5, pos[1], pos[2], pos[3]])
-      }
-      else if (pos[3] == "S") {
-        user.set(id, [pos[0], pos[1] + 5, pos[2], pos[3]])
-      }
-      else if (pos[3] == "D") {
-        user.set(id, [pos[0] + 5, pos[1], pos[2], pos[3]])
-      }
+    var b = false;
+    var newx = pos[0];
+    var newy = pos[1]
+    if (pos[2][0] === true) {
+      newy = newy - 5;
+      b = true;
     }
+    if (pos[2][1] === true) {
+      newx = newx - 5;
+      b = true;
+    }
+    if (pos[2][2] === true) {
+      newy = newy + 5;
+      b = true;
+    }
+    if (pos[2][3] === true) {
+      newx = newx + 5;
+      b = true;
+    }
+    if (b) {
+      user.set(id, [newx, newy, pos[2]])
+    }
+    
   }
 }
-
-
-
-
-
-
-// const express=require('express');
-// const app=express();
-// const PORT=8080;
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
-
-// app.get('/',(req,res)=>{
-//   res.write('Welcome to NodeJS + Express CORS Server!')
-// })
-
-// app.listen(PORT,()=>{
-//     console.log(`Server running on port ${PORT}`)
-// })

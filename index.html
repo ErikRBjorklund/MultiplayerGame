@@ -14,7 +14,6 @@
     </head>
     <body style="background-color: black;">
         <canvas id="canv" style="background-color:white;"></canvas>
-        <!-- <script src="client.js"></script> -->
         <script src="canvas.js"></script>
         <script type = "text/javascript">
             
@@ -45,17 +44,24 @@
                 console.log(data);
             })
 
-            var fired = false;
+            var fired = new Map([
+                ['W', false],
+                ['A', false],
+                ['S', false],
+                ['D', false],
+            ]);
             document.addEventListener('keydown', (e) => {
-                if (!fired) {
-                    console.log("down");
-                    fired = true;
-                ws.send(`${uid} D ${event.key}`.toUpperCase());
+                if (event.key.toUpperCase() === 'W' || event.key.toUpperCase() === 'A' || event.key.toUpperCase() === 'S' || event.key.toUpperCase() === 'D') {
+                    if (!fired.get(event.key.toUpperCase())) {
+                        fired.set(event.key.toUpperCase(), true);
+                        ws.send(`${uid} D ${event.key}`.toUpperCase());
+                    }
                 }
             })
             document.addEventListener('keyup', (e) => {
-                console.log("up");
-                fired = false;
+                if (event.key.toUpperCase() === 'W' || event.key.toUpperCase() === 'A' || event.key.toUpperCase() === 'S' || event.key.toUpperCase() === 'D') {
+                    fired.set(event.key.toUpperCase(), false);
+                }
                 ws.send(`${uid} U ${event.key}`.toUpperCase());
             })
 
