@@ -29,6 +29,7 @@
             })
             
             ws.addEventListener("message", e => {
+                if (e.repeat) { return }
                 console.log(e.data);
                 const data = e.data.split(" ");
                 var tid = -1;
@@ -44,10 +45,18 @@
                 console.log(data);
             })
 
-
+            var fired = false;
             document.addEventListener('keydown', (e) => {
-                console.log("5");
-                ws.send(`${uid} ${event.key}`.toUpperCase());
+                if (!fired) {
+                    console.log("down");
+                    fired = true;
+                ws.send(`${uid} D ${event.key}`.toUpperCase());
+                }
+            })
+            document.addEventListener('keyup', (e) => {
+                console.log("up");
+                fired = false;
+                ws.send(`${uid} U ${event.key}`.toUpperCase());
             })
 
             ws.addEventListener("close", () => {
